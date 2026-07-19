@@ -3,11 +3,13 @@ import { HeroScene } from './three/HeroScene';
 import { Reveal } from './components/Reveal';
 import { GAME, FEATURES, FACTIONS, PRINCIPLES, STATS } from './data';
 
+const asset = (path: string) => import.meta.env.BASE_URL + path;
+
 function Nav() {
   return (
     <header className="nav">
       <a className="brand" href="#top">
-        <img src="/brand/icon.png" alt="" width={34} height={34} />
+        <img src={asset('brand/icon.png')} alt="" width={34} height={34} />
         <span>VOID<b>DOMINION</b></span>
       </a>
       <nav className="nav-links">
@@ -179,7 +181,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-brand">
-        <img src="/brand/icon.png" alt="" width={26} height={26} />
+        <img src={asset('brand/icon.png')} alt="" width={26} height={26} />
         <span>VOID DOMINION</span>
       </div>
       <p>Оригинальная игра · код, контент и механики. Вдохновлено жанром, но не копия.</p>
