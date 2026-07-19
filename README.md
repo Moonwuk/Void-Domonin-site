@@ -1,45 +1,40 @@
 # Void Dominion — сайт-визитка
 
-Премиальный лендинг для игры [**Void Dominion**](https://github.com/Moonwuk/MoonGame) —
-real-time космической grand strategy с массовым мультиплеером. Тёмный космос,
-интерактивная 3D-сцена во весь экран и holo-UI в стиле игры.
-
-**Live:** https://moonwuk.github.io/Void-Domonin-site/
+Лендинг для игры [**Void Dominion**](https://github.com/Moonwuk/MoonGame) — real-time
+космической grand strategy с массовым мультиплеером. Тёмный космический стиль игры,
+интерактивная 3D-сцена в hero-блоке и адаптивная вёрстка.
 
 ## Стек
 
-- **Vite** + **TypeScript** (без фреймворка — статический HTML + один модуль сцены)
-- **three.js** (бандлится из npm, без CDN): процедурная планета на GLSL-шейдере
-  (fbm-шум, огни городов, атмосфера-fresnel), туманности, орбитальные кольца с флотами,
-  далёкое солнце, звёздное поле на 8000 точек
-- **postprocessing**: `UnrealBloomPass` + ACES tone mapping
-- Шрифты Orbitron / Inter / JetBrains Mono, палитра cyan/purple тёмного космоса
-
-## Возможности
-
-- Full-screen 3D hero со scroll-driven камерой и mouse-параллаксом
-- Glitch-заголовок, loader, reveal-on-scroll, живые счётчики в статах
-- Секции: об игре, 12 модулей-механик, принципы архитектуры, статус разработки, CTA
-- **Адаптив** + мобильное меню-бургер
-- **`prefers-reduced-motion`**: отключает autorotate/анимации, рендерит статичный кадр
-- Пауза рендер-цикла в фоновой вкладке (экономия CPU/батареи)
+- **Vite** + **React** + **TypeScript**
+- **three.js** через **@react-three/fiber** и **@react-three/drei** — 3D-сцена (планета,
+  атмосфера-fresnel, орбитальные флоты, звёздное поле)
+- **framer-motion** — анимации появления секций
+- Палитра и типографика зеркалят тему прототипа (cyan `#35d6e6` на тёмном космосе)
 
 ## Разработка
 
 ```bash
 npm install
 npm run dev      # локальный dev-сервер
-npm run build    # прод-сборка в dist/ (tsc + vite)
+npm run build    # прод-сборка в dist/
 npm run preview  # предпросмотр сборки
 npm run lint     # oxlint
 ```
 
 Требуется Node >= 20 (проверено на 22).
 
+## Доступность
+
+- Полностью адаптивный layout (desktop / планшет / мобайл).
+- `prefers-reduced-motion` отключает анимации для чувствительных пользователей.
+- 3D-сцена рендерится в фоне и не блокирует контент.
+
 ## Деплой
 
-GitHub Pages через `.github/workflows/deploy.yml`. Для project-site путь задаётся
-`VITE_BASE=/<repo>/`. Pages включён в Settings (Source: GitHub Actions).
+Настроен GitHub Pages через `.github/workflows/deploy.yml`. Для project-site путь
+задаётся переменной `VITE_BASE` (`/<repo>/`). Включите Pages в настройках репозитория
+(Source: GitHub Actions).
 
 ---
 
