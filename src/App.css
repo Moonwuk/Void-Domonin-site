@@ -154,22 +154,29 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   margin: 16px 0 0;
-  /* Мягкое медленное переливание: белый → светлый циан → белый → сиреневый. */
+  /* Чёрные «стеклянные» буквы: тёмный силуэт на фоне свечения, по которому
+     медленно пробегает блик от солнца. Тонкая циановая кромка держит
+     читаемость на тёмной части фона. */
   background: linear-gradient(
-    105deg,
-    #eafffb 0%,
-    #8ff4fa 24%,
-    #ffffff 48%,
-    #c9b3ff 72%,
-    #eafffb 96%
+    100deg,
+    #04090c 0%,
+    #0a161a 20%,
+    #14383e 34%,
+    #8ff4fa 46%,
+    #eafffb 50%,
+    #8ff4fa 54%,
+    #14383e 66%,
+    #0a161a 80%,
+    #04090c 100%
   );
-  background-size: 230% 100%;
+  background-size: 300% 100%;
   background-position: 0% 50%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 60px rgba(53, 214, 230, 0.25);
-  animation: title-shimmer 11s ease-in-out infinite;
+  -webkit-text-stroke: 1px rgba(143, 244, 250, 0.34);
+  text-shadow: 0 0 50px rgba(53, 214, 230, 0.4);
+  animation: title-shimmer 9s ease-in-out infinite;
 }
 @keyframes title-shimmer {
   0%, 100% { background-position: 0% 50%; }
