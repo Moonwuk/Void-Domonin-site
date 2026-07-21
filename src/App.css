@@ -30,6 +30,7 @@
 }
 .nav-links a { color: var(--dim); transition: color 0.2s; }
 .nav-links a:hover { color: var(--ink-bright); }
+.lang-menu { position: relative; }
 .lang-btn {
   font-family: var(--mono);
   font-size: 12px;
@@ -44,6 +45,41 @@
 }
 .lang-btn:hover { color: var(--ink-bright); border-color: var(--line-hi); }
 .lang-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.lang-caret { font-size: 9px; opacity: 0.7; }
+.lang-list {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 140px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--line-hi);
+  border-radius: 12px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+  z-index: 60;
+}
+.lang-list button {
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.lang-list button:hover { background: rgba(53, 214, 230, 0.1); color: var(--ink-bright); }
+.lang-list button:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.lang-list button.active { color: var(--cyan); }
+.lang-list button.active::after { content: ' ✓'; }
 .nav-cta {
   padding: 9px 18px;
   border: 1px solid var(--cyan-dim);
@@ -64,6 +100,7 @@
   .nav-links a { white-space: nowrap; }
   .nav-cta { padding: 7px 12px; }
   .lang-btn { padding: 5px 8px; font-size: 11px; }
+  .lang-list { right: -60px; }
 }
 
 /* ---------- Hero ---------- */
@@ -117,11 +154,26 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   margin: 16px 0 0;
-  background: linear-gradient(180deg, #ffffff, var(--cyan) 130%);
+  /* Мягкое медленное переливание: белый → светлый циан → белый → сиреневый. */
+  background: linear-gradient(
+    105deg,
+    #eafffb 0%,
+    #8ff4fa 24%,
+    #ffffff 48%,
+    #c9b3ff 72%,
+    #eafffb 96%
+  );
+  background-size: 230% 100%;
+  background-position: 0% 50%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   text-shadow: 0 0 60px rgba(53, 214, 230, 0.25);
+  animation: title-shimmer 11s ease-in-out infinite;
+}
+@keyframes title-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 .hero-tagline {
   max-width: 560px;

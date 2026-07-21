@@ -176,6 +176,7 @@ export function HeroScene() {
 
     const planetUniforms = {
       uTime: { value: 0 },
+      uPulse: { value: 0.5 },
       uColorA: { value: new THREE.Color('#062a31') },
       uColorB: { value: new THREE.Color('#0e5a63') },
       uColorC: { value: new THREE.Color('#35d6e6') },
@@ -201,6 +202,7 @@ export function HeroScene() {
         varying vec3 vPos;
         varying vec3 vWorldPos;
         uniform float uTime;
+        uniform float uPulse;
         uniform vec3 uColorA, uColorB, uColorC, uColorD, uAtmo;
         float hash(vec3 p){p=fract(p*0.3183099+0.1);p*=17.0;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
         float noise(vec3 x){vec3 i=floor(x);vec3 f=fract(x);f=f*f*(3.0-2.0*f);
@@ -222,7 +224,7 @@ export function HeroScene() {
           col += vec3(0.7, 1.0, 1.0) * lights;
           vec3 viewDir = normalize(cameraPosition - vWorldPos);
           float rim = pow(1.0 - max(dot(vNormal, viewDir), 0.0), 2.5);
-          col += uAtmo * rim * 0.9;
+          col += uAtmo * rim * (0.7 + 0.4 * uPulse);
           float light = max(dot(vNormal, normalize(vec3(-0.5, 0.4, 1.0))), 0.0);
           col *= 0.4 + 0.8 * light;
           gl_FragColor = vec4(col, 1.0);
@@ -232,8 +234,12 @@ export function HeroScene() {
     const planet = new THREE.Mesh(new THREE.SphereGeometry(10, 96, 96), planetMat);
     planetGroup.add(planet);
 
+    const atmoUniforms = {
+      uColor: { value: new THREE.Color('#35d6e6') },
+      uPulse: { value: 0.5 },
+    };
     const atmoMat = new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: new THREE.Color('#35d6e6') } },
+      uniforms: atmoUniforms,
       vertexShader: `
         varying vec3 vNormal;
         varying vec3 vWorldPos;
@@ -248,10 +254,11 @@ export function HeroScene() {
         varying vec3 vNormal;
         varying vec3 vWorldPos;
         uniform vec3 uColor;
+        uniform float uPulse;
         void main(){
           vec3 viewDir = normalize(cameraPosition - vWorldPos);
           float intensity = pow(1.0 - dot(vNormal, viewDir), 3.0);
-          gl_FragColor = vec4(uColor, intensity * 0.85);
+          gl_FragColor = vec4(uColor, intensity * (0.68 + 0.34 * uPulse));
         }
       `,
       side: THREE.BackSide,
@@ -261,63 +268,6 @@ export function HeroScene() {
     });
     const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(11.4, 64, 64), atmoMat);
     planetGroup.add(atmosphere);
-
-    // ===== ORBITAL RINGS + FLEETS =====
-    const ringGroup = new THREE.Group();
-    world.add(ringGroup);
-    const ringConfigs = [
-      { radius: 16, tilt: 0.05, color: 0x35d6e6, speed: 0.0035, fleetCount: 3, fleetSize: 0.32 },
-      { radius: 21, tilt: -0.18, color: 0x8ff4fa, speed: -0.0024, fleetCount: 4, fleetSize: 0.28 },
-      { radius: 27, tilt: 0.32, color: 0xffb43a, speed: 0.0016, fleetCount: 2, fleetSize: 0.42 },
-      { radius: 33, tilt: -0.4, color: 0xb48cff, speed: -0.0011, fleetCount: 3, fleetSize: 0.24 },
-    ];
-    const fleets: { mesh: THREE.Mesh; radius: number; angle: number; speed: number; tilt: number }[] = [];
-    const ringMeshes: THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>[] = [];
-    for (const cfg of ringConfigs) {
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(cfg.radius - 0.02, cfg.radius + 0.02, 180),
-        new THREE.MeshBasicMaterial({
-          color: cfg.color,
-          transparent: true,
-          opacity: 0.16,
-          side: THREE.DoubleSide,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        }),
-      );
-      ring.rotation.x = Math.PI / 2 + cfg.tilt;
-      ringGroup.add(ring);
-      ringMeshes.push(ring);
-
-      for (let f = 0; f < cfg.fleetCount; f++) {
-        const fleet = new THREE.Mesh(
-          new THREE.SphereGeometry(cfg.fleetSize, 12, 12),
-          new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: 0.95 }),
-        );
-        const halo = new THREE.Sprite(
-          new THREE.SpriteMaterial({
-            map: makeRadialTexture(
-              `rgba(${(cfg.color >> 16) & 0xff},${(cfg.color >> 8) & 0xff},${cfg.color & 0xff},0.8)`,
-              `rgba(${(cfg.color >> 16) & 0xff},${(cfg.color >> 8) & 0xff},${cfg.color & 0xff},0.12)`,
-            ),
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            opacity: 0.8,
-          }),
-        );
-        halo.scale.set(2.2, 2.2, 1);
-        fleet.add(halo);
-        fleets.push({
-          mesh: fleet,
-          radius: cfg.radius,
-          angle: (f / cfg.fleetCount) * Math.PI * 2 + Math.random() * 0.5,
-          speed: cfg.speed * (0.8 + Math.random() * 0.4),
-          tilt: cfg.tilt,
-        });
-        ringGroup.add(fleet);
-      }
-    }
 
     // ===== DISTANT SUN =====
     const sun = new THREE.Mesh(
@@ -383,15 +333,12 @@ export function HeroScene() {
       starMat.uniforms.uTime.value = t;
       stars.rotation.y = t * 0.005;
       nebulaGroup.rotation.y = t * 0.008;
-      for (const fl of fleets) {
-        fl.angle += fl.speed;
-        const x = Math.cos(fl.angle) * fl.radius;
-        const z = Math.sin(fl.angle) * fl.radius;
-        fl.mesh.position.set(x, -z * Math.sin(fl.tilt), z * Math.cos(fl.tilt));
-      }
-      ringMeshes.forEach((ring, i) => {
-        ring.material.opacity = 0.11 + 0.07 * Math.sin(t * 0.8 + i * 0.5);
-      });
+      // Нежное «дыхание» светила: ободок и атмосфера медленно разгораются
+      // и гаснут, сам шар едва заметно расширяется.
+      const breath = 0.5 + 0.5 * Math.sin(t * 0.6);
+      planetUniforms.uPulse.value = breath;
+      atmoUniforms.uPulse.value = breath;
+      planetGroup.scale.setScalar(1 + 0.012 * breath);
       composer.render();
       if (running) rafId = requestAnimationFrame(frame);
     }
@@ -422,13 +369,6 @@ export function HeroScene() {
     document.addEventListener('visibilitychange', onVisibility);
 
     if (reduced) {
-      for (const fl of fleets) {
-        fl.mesh.position.set(
-          Math.cos(fl.angle) * fl.radius,
-          -Math.sin(fl.angle) * fl.radius * Math.sin(fl.tilt),
-          Math.sin(fl.angle) * fl.radius * Math.cos(fl.tilt),
-        );
-      }
       composer.render();
     } else {
       start();
