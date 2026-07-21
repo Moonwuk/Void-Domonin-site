@@ -154,11 +154,26 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   margin: 16px 0 0;
-  background: linear-gradient(180deg, #ffffff, var(--cyan) 130%);
+  /* Мягкое медленное переливание: белый → светлый циан → белый → сиреневый. */
+  background: linear-gradient(
+    105deg,
+    #eafffb 0%,
+    #8ff4fa 24%,
+    #ffffff 48%,
+    #c9b3ff 72%,
+    #eafffb 96%
+  );
+  background-size: 230% 100%;
+  background-position: 0% 50%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   text-shadow: 0 0 60px rgba(53, 214, 230, 0.25);
+  animation: title-shimmer 11s ease-in-out infinite;
+}
+@keyframes title-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 .hero-tagline {
   max-width: 560px;
