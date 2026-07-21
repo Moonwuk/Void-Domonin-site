@@ -7,8 +7,8 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 
 /**
- * Финальный дизеринг: ±0.75/255 шума перед квантованием в 8 бит убирает
- * полосы и «шахматный» узор браузерного дизеринга на плавных градиентах.
+ * Финальный дизеринг: треугольный шум ±1/255 перед квантованием в 8 бит
+ * убирает полосы и «шахматный» узор браузерного дизеринга на градиентах.
  */
 const DitherShader = {
   uniforms: { tDiffuse: { value: null as THREE.Texture | null } },
@@ -25,8 +25,9 @@ const DitherShader = {
     float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     void main() {
       vec4 c = texture2D(tDiffuse, vUv);
-      float n = hash(gl_FragCoord.xy) - 0.5;
-      gl_FragColor = vec4(c.rgb + n * (1.5 / 255.0), c.a);
+      // треугольное распределение маскирует квантование лучше равномерного
+      float n = hash(gl_FragCoord.xy) + hash(gl_FragCoord.xy + 17.31) - 1.0;
+      gl_FragColor = vec4(c.rgb + n * (2.0 / 255.0), c.a);
     }
   `,
 };
@@ -313,6 +314,66 @@ export function HeroScene() {
     const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(11.4, 64, 64), atmoMat);
     planetGroup.add(atmosphere);
 
+    // ===== SUN NEBULA =====
+    // Облачная туманность позади светила: подсвечивается его светом и своей
+    // текстурой прячет остатки полос квантования на плавном свечении.
+    const sunNebulaUniforms = {
+      uTime: { value: 0 },
+      uPulse: { value: 0.5 },
+      uColorNear: { value: new THREE.Color('#8ff4fa') },
+      uColorMid: { value: new THREE.Color('#35d6e6') },
+      uColorFar: { value: new THREE.Color('#0d2f36') },
+    };
+    const sunNebulaMat = new THREE.ShaderMaterial({
+      uniforms: sunNebulaUniforms,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec2 vUv;
+        uniform float uTime;
+        uniform float uPulse;
+        uniform vec3 uColorNear, uColorMid, uColorFar;
+        float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        float noise(vec2 x){
+          vec2 i = floor(x); vec2 f = fract(x); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x),
+                     mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
+        }
+        float fbm(vec2 p){ float v = 0.0; float a = 0.5;
+          for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
+          return v; }
+        void main() {
+          vec2 p = (vUv - 0.5) * 6.0;
+          float r = length(p);
+          // медленный дрейф облаков, поле перемешивает само себя
+          vec2 q = vec2(
+            fbm(p * 0.8 + vec2(uTime * 0.014, 3.7)),
+            fbm(p * 0.8 + vec2(8.1, -uTime * 0.011))
+          );
+          float cloud = fbm(p * 1.5 + q * 1.9);
+          cloud = smoothstep(0.32, 0.86, cloud);
+          // подсветка от светила в центре, дышит вместе с ним
+          float light = exp(-r * 0.55) * (0.8 + 0.35 * uPulse);
+          vec3 col = mix(uColorFar, uColorMid, clamp(light * 1.4, 0.0, 1.0));
+          col = mix(col, uColorNear, clamp(light * light * 1.6, 0.0, 1.0));
+          float alpha = cloud * exp(-r * 0.42) * 0.55;
+          alpha *= smoothstep(3.0, 2.1, r);
+          gl_FragColor = vec4(col, alpha);
+        }
+      `,
+    });
+    const sunNebula = new THREE.Mesh(new THREE.PlaneGeometry(260, 260), sunNebulaMat);
+    sunNebula.position.set(0, 0, -34);
+    world.add(sunNebula);
+
     // ===== POST PROCESSING =====
     const composer = new EffectComposer(renderer);
     composer.setPixelRatio(dpr);
@@ -356,6 +417,8 @@ export function HeroScene() {
       planetUniforms.uPulse.value = breath;
       atmoUniforms.uPulse.value = breath;
       atmoUniforms.uTime.value = t;
+      sunNebulaUniforms.uTime.value = t;
+      sunNebulaUniforms.uPulse.value = breath;
       planetGroup.scale.setScalar(1 + 0.012 * breath);
       composer.render();
       if (running) rafId = requestAnimationFrame(frame);
