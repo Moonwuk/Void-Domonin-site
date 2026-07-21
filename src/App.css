@@ -30,6 +30,20 @@
 }
 .nav-links a { color: var(--dim); transition: color 0.2s; }
 .nav-links a:hover { color: var(--ink-bright); }
+.lang-btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--dim);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.lang-btn:hover { color: var(--ink-bright); border-color: var(--line-hi); }
+.lang-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .nav-cta {
   padding: 9px 18px;
   border: 1px solid var(--cyan-dim);
@@ -46,9 +60,10 @@
   .nav { padding: 10px 12px; }
   .brand span { display: none; }
   .brand img { width: 28px; height: 28px; }
-  .nav-links { gap: 10px; font-size: 12px; }
+  .nav-links { gap: 9px; font-size: 12px; }
   .nav-links a { white-space: nowrap; }
   .nav-cta { padding: 7px 12px; }
+  .lang-btn { padding: 5px 8px; font-size: 11px; }
 }
 
 /* ---------- Hero ---------- */
