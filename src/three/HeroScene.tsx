@@ -211,22 +211,34 @@ export function HeroScene() {
                      mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),
                          mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}
         float fbm(vec3 p){float v=0.0;float a=0.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.0;a*=0.5;}return v;}
+        float fbm4(vec3 p){float v=0.0;float a=0.5;for(int i=0;i<4;i++){v+=a*noise(p);p*=2.0;a*=0.5;}return v;}
         void main(){
-          vec3 p = normalize(vPos) * 2.5;
-          float n = fbm(p + vec3(uTime * 0.02, 0.0, 0.0));
-          float n2 = fbm(p * 2.2 - vec3(uTime * 0.01, 0.0, 0.0));
-          float bands = sin(p.y * 6.0 + n2 * 3.0) * 0.5 + 0.5;
-          vec3 col = mix(uColorD, uColorA, bands);
-          col = mix(col, uColorB, smoothstep(0.4, 0.7, n));
-          col = mix(col, uColorC, smoothstep(0.65, 0.85, n) * 0.6);
-          float dark = pow(1.0 - max(dot(vNormal, normalize(vec3(-0.4, 0.3, 1.0))), 0.0), 2.0);
-          float lights = step(0.80, n2) * dark * 0.5;
-          col += vec3(0.7, 1.0, 1.0) * lights;
+          vec3 p = normalize(vPos);
+          float t = uTime;
+          // «Кипение» как на Солнце: domain warping — поле шума медленно
+          // перемешивает само себя, ячейки всплывают и растворяются.
+          vec3 q = vec3(
+            fbm4(p * 2.4 + vec3(0.0, 3.1, 1.3) + t * 0.060),
+            fbm4(p * 2.4 + vec3(5.2, 0.4, 2.8) - t * 0.050),
+            fbm4(p * 2.4 + vec3(1.9, 7.7, 4.1) + t * 0.042)
+          );
+          float turb = fbm(p * 3.2 + q * 1.7);
+          // грануляция: мелкие конвекционные ячейки, кипят быстрее крупных
+          float gran = fbm4(p * 9.5 + q * 2.3 + vec3(t * 0.11, -t * 0.08, t * 0.06));
+          // растягиваем контраст: fbm тяготеет к 0.5, без этого узор блёклый
+          float heat = clamp((turb - 0.5) * 1.5 + (gran - 0.5) * 1.25 + 0.5, 0.0, 1.0);
+          vec3 col = mix(uColorD, uColorA, smoothstep(0.16, 0.50, heat));
+          col = mix(col, uColorB, smoothstep(0.44, 0.66, heat));
+          col = mix(col, uColorC, smoothstep(0.60, 0.82, heat));
+          col = mix(col, vec3(0.92, 1.0, 1.0), smoothstep(0.80, 0.97, heat));
+          // самые горячие ячейки вспыхивают добела — их подхватывает bloom
+          col += vec3(0.9, 1.0, 1.0) * pow(max(heat - 0.82, 0.0) * 4.5, 2.0) * 0.45;
           vec3 viewDir = normalize(cameraPosition - vWorldPos);
-          float rim = pow(1.0 - max(dot(vNormal, viewDir), 0.0), 2.5);
-          col += uAtmo * rim * (0.7 + 0.4 * uPulse);
-          float light = max(dot(vNormal, normalize(vec3(-0.5, 0.4, 1.0))), 0.0);
-          col *= 0.4 + 0.8 * light;
+          float mu = max(dot(vNormal, viewDir), 0.0);
+          // потемнение к лимбу, как у настоящего Солнца
+          col *= 0.48 + 0.46 * pow(mu, 0.65);
+          float rim = pow(1.0 - mu, 2.5);
+          col += uAtmo * rim * (0.5 + 0.3 * uPulse);
           gl_FragColor = vec4(col, 1.0);
         }
       `,
@@ -237,6 +249,7 @@ export function HeroScene() {
     const atmoUniforms = {
       uColor: { value: new THREE.Color('#35d6e6') },
       uPulse: { value: 0.5 },
+      uTime: { value: 0 },
     };
     const atmoMat = new THREE.ShaderMaterial({
       uniforms: atmoUniforms,
@@ -255,10 +268,15 @@ export function HeroScene() {
         varying vec3 vWorldPos;
         uniform vec3 uColor;
         uniform float uPulse;
+        uniform float uTime;
         void main(){
           vec3 viewDir = normalize(cameraPosition - vWorldPos);
           float intensity = pow(1.0 - dot(vNormal, viewDir), 3.0);
-          gl_FragColor = vec4(uColor, intensity * (0.68 + 0.34 * uPulse));
+          // корона слегка «течёт»: медленные волны яркости вдоль ободка
+          float flow = 0.92
+            + 0.14 * sin(uTime * 0.65 + vWorldPos.y * 0.32 + vWorldPos.x * 0.21)
+            + 0.08 * sin(uTime * 1.05 - vWorldPos.y * 0.55);
+          gl_FragColor = vec4(uColor, intensity * (0.68 + 0.34 * uPulse) * flow);
         }
       `,
       side: THREE.BackSide,
@@ -273,7 +291,7 @@ export function HeroScene() {
     const composer = new EffectComposer(renderer);
     composer.setPixelRatio(dpr);
     composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), isMobile ? 0.5 : 0.62, 0.5, 0.2);
+    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), isMobile ? 0.5 : 0.62, 0.5, 0.32);
     composer.addPass(bloom);
     const output = new OutputPass();
     composer.addPass(output);
@@ -319,6 +337,7 @@ export function HeroScene() {
       const breath = 0.5 + 0.5 * Math.sin(t * 0.6);
       planetUniforms.uPulse.value = breath;
       atmoUniforms.uPulse.value = breath;
+      atmoUniforms.uTime.value = t;
       planetGroup.scale.setScalar(1 + 0.012 * breath);
       composer.render();
       if (running) rafId = requestAnimationFrame(frame);
