@@ -1,7 +1,11 @@
+import { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
-import { HeroScene } from './three/HeroScene';
 import { Reveal } from './components/Reveal';
-import { GAME, FEATURES, FACTIONS, PRINCIPLES, STATS } from './data';
+import { GAME, FEATURES, FACTIONS, PRINCIPLES, STATS, UPCOMING } from './data';
+
+const HeroScene = lazy(() =>
+  import('./three/HeroScene').then((m) => ({ default: m.HeroScene })),
+);
 
 const asset = (path: string) => import.meta.env.BASE_URL + path;
 
@@ -9,14 +13,14 @@ function Nav() {
   return (
     <header className="nav">
       <a className="brand" href="#top">
-        <img src={asset('brand/icon.png')} alt="" width={34} height={34} />
+        <img src={asset('brand/icon-small.png')} alt="" width={34} height={34} />
         <span>VOID<b>DOMINION</b></span>
       </a>
       <nav className="nav-links">
         <a href="#features">Возможности</a>
         <a href="#factions">Фракции</a>
-        <a href="#tech">Технология</a>
-        <a className="nav-cta" href={GAME.apkUrl}>Играть</a>
+        <a href="#fair">Честная игра</a>
+        <a className="nav-cta" href={GAME.apkUrl}>Скачать</a>
       </nav>
     </header>
   );
@@ -26,7 +30,9 @@ function Hero() {
   return (
     <section className="hero" id="top">
       <div className="hero-canvas">
-        <HeroScene />
+        <Suspense fallback={null}>
+          <HeroScene />
+        </Suspense>
       </div>
       <div className="hero-inner">
         <motion.p
@@ -35,7 +41,7 @@ function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
-          Real-time · MMO · Grand Strategy
+          Real-time · MMO · Стратегия
         </motion.p>
         <motion.h1
           className="hero-title"
@@ -62,10 +68,18 @@ function Hero() {
           <a className="btn btn-primary" href={GAME.apkUrl}>
             Скачать альфу (Android)
           </a>
-          <a className="btn btn-ghost" href={GAME.repoUrl} target="_blank" rel="noreferrer">
-            Исходный код на GitHub
-          </a>
+          <span className="btn btn-ghost btn-soon">
+            В браузере <em>скоро</em>
+          </span>
         </motion.div>
+        <motion.p
+          className="hero-note"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.36 }}
+        >
+          {GAME.apkNote}
+        </motion.p>
       </div>
       <div className="scroll-hint" aria-hidden>
         <span />
@@ -94,8 +108,8 @@ function Features() {
         <p className="kicker">Что внутри</p>
         <h2>Империя, которая живёт без тебя</h2>
         <p className="section-sub">
-          Экономика, армии, наука и интриги в одном непрерывном мире. Каждая система работает
-          на настоящем детерминированном ядре — том же, что и на сервере.
+          Экономика, армии, наука и интриги в одном непрерывном мире. Пока ты офлайн, приказы
+          выполняются, флоты летят, а рудники копают.
         </p>
       </Reveal>
       <div className="feature-grid">
@@ -118,8 +132,8 @@ function Factions() {
         <p className="kicker">Дома космоса</p>
         <h2>Выбери свою фракцию</h2>
         <p className="section-sub">
-          Четыре лор-дома, каждый с пассивным бонусом. В сетевом матче до десяти командиров
-          делят одну карту — союзники и соперники одновременно.
+          Четыре дома, каждый со своим бонусом. В матче до десяти командиров делят одну карту —
+          союзники и соперники одновременно.
         </p>
       </Reveal>
       <div className="faction-grid">
@@ -137,12 +151,12 @@ function Factions() {
   );
 }
 
-function Tech() {
+function FairPlay() {
   return (
-    <section className="section" id="tech">
+    <section className="section" id="fair">
       <Reveal className="section-head">
-        <p className="kicker">Под капотом</p>
-        <h2>Инженерия, а не магия</h2>
+        <p className="kicker">Правила одни для всех</p>
+        <h2>Честная игра</h2>
       </Reveal>
       <div className="principle-grid">
         {PRINCIPLES.map((p, i) => (
@@ -163,14 +177,29 @@ function CTA() {
       <Reveal className="cta-inner">
         <h2>Мир уже идёт. Займи своё место.</h2>
         <p>
-          Играбельная альфа для Android — тот же single-file прототип, что и в браузере.
-          Скирмиш против ИИ или онлайн-матч по позывным.
+          Играбельная альфа доступна на Android: скирмиш против ИИ или онлайн-матч с друзьями.
+          Дальше — больше.
         </p>
         <div className="hero-actions">
           <a className="btn btn-primary" href={GAME.apkUrl}>Скачать APK</a>
-          <a className="btn btn-ghost" href={GAME.repoUrl} target="_blank" rel="noreferrer">
-            Документация и код
-          </a>
+        </div>
+        <p className="hero-note">{GAME.apkNote}</p>
+        <div className="soon-grid">
+          {UPCOMING.map((u) => {
+            const inner = (
+              <>
+                <span className="soon-icon" aria-hidden>{u.icon}</span>
+                <span className="soon-badge">Скоро</span>
+                <h3>{u.title}</h3>
+                <p>{u.text}</p>
+              </>
+            );
+            return u.href ? (
+              <a key={u.title} className="soon" href={u.href}>{inner}</a>
+            ) : (
+              <div key={u.title} className="soon">{inner}</div>
+            );
+          })}
         </div>
       </Reveal>
     </section>
@@ -181,11 +210,11 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-brand">
-        <img src={asset('brand/icon.png')} alt="" width={26} height={26} />
+        <img src={asset('brand/icon-small.png')} alt="" width={26} height={26} />
         <span>VOID DOMINION</span>
       </div>
-      <p>Оригинальная игра · код, контент и механики. Вдохновлено жанром, но не копия.</p>
-      <a href={GAME.repoUrl} target="_blank" rel="noreferrer">GitHub →</a>
+      <p>© 2026 Void Dominion · Играбельная альфа для Android</p>
+      <span className="footer-soon">Скоро: браузерная версия · форум · магазин</span>
     </footer>
   );
 }
@@ -199,7 +228,7 @@ export default function App() {
         <Stats />
         <Features />
         <Factions />
-        <Tech />
+        <FairPlay />
         <CTA />
       </main>
       <Footer />

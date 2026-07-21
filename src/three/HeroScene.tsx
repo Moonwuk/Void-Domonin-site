@@ -25,12 +25,20 @@ export function HeroScene() {
     canvas.style.display = 'block';
     wrap.appendChild(canvas);
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-    });
+    // Без WebGL конструктор рендерера бросает исключение; страница при этом
+    // должна остаться живой — hero просто показывает CSS-градиент фона.
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance',
+      });
+    } catch {
+      wrap.removeChild(canvas);
+      return;
+    }
     const dpr = Math.min(window.devicePixelRatio, 2);
     renderer.setPixelRatio(dpr);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -113,6 +121,8 @@ export function HeroScene() {
     scene.add(stars);
 
     // ===== NEBULA SPRITES =====
+    // material.dispose() не освобождает map — собираем все созданные текстуры.
+    const textures: THREE.Texture[] = [];
     function makeRadialTexture(color1: string, color2: string) {
       const size = 256;
       const cv = document.createElement('canvas');
@@ -136,6 +146,7 @@ export function HeroScene() {
       }
       const tex = new THREE.CanvasTexture(cv);
       tex.colorSpace = THREE.SRGBColorSpace;
+      textures.push(tex);
       return tex;
     }
     const nebulaConfigs: { pos: [number, number, number]; scale: number; c1: string; c2: string }[] = [
@@ -261,6 +272,7 @@ export function HeroScene() {
       { radius: 33, tilt: -0.4, color: 0xb48cff, speed: -0.0011, fleetCount: 3, fleetSize: 0.24 },
     ];
     const fleets: { mesh: THREE.Mesh; radius: number; angle: number; speed: number; tilt: number }[] = [];
+    const ringMeshes: THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>[] = [];
     for (const cfg of ringConfigs) {
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(cfg.radius - 0.02, cfg.radius + 0.02, 180),
@@ -275,6 +287,7 @@ export function HeroScene() {
       );
       ring.rotation.x = Math.PI / 2 + cfg.tilt;
       ringGroup.add(ring);
+      ringMeshes.push(ring);
 
       for (let f = 0; f < cfg.fleetCount; f++) {
         const fleet = new THREE.Mesh(
@@ -331,9 +344,12 @@ export function HeroScene() {
     composer.addPass(new RenderPass(scene, camera));
     const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), isMobile ? 0.5 : 0.62, 0.5, 0.2);
     composer.addPass(bloom);
-    composer.addPass(new OutputPass());
+    const output = new OutputPass();
+    composer.addPass(output);
 
     // ===== SIZE =====
+    let rafId = 0;
+    let running = false;
     function resize() {
       const w = wrap!.clientWidth || 1;
       const h = wrap!.clientHeight || 1;
@@ -341,6 +357,8 @@ export function HeroScene() {
       camera.updateProjectionMatrix();
       renderer.setSize(w, h, false);
       composer.setSize(w, h);
+      // setSize очищает канвас; без цикла (reduced motion / пауза) кадр надо вернуть.
+      if (!running) composer.render();
     }
     resize();
     const ro = new ResizeObserver(resize);
@@ -357,8 +375,6 @@ export function HeroScene() {
 
     // ===== LOOP =====
     const clock = new THREE.Clock();
-    let rafId = 0;
-    let running = false;
     function frame() {
       const t = clock.getElapsedTime();
       planetGroup.rotation.y = t * 0.05 + mouseX * 0.12;
@@ -373,12 +389,8 @@ export function HeroScene() {
         const z = Math.sin(fl.angle) * fl.radius;
         fl.mesh.position.set(x, -z * Math.sin(fl.tilt), z * Math.cos(fl.tilt));
       }
-      ringGroup.children.forEach((child, i) => {
-        const mesh = child as THREE.Mesh;
-        const mat = mesh.material as THREE.Material & { opacity?: number };
-        if (mesh.type === 'Mesh' && mat.opacity !== undefined) {
-          mat.opacity = 0.11 + 0.07 * Math.sin(t * 0.8 + i * 0.5);
-        }
+      ringMeshes.forEach((ring, i) => {
+        ring.material.opacity = 0.11 + 0.07 * Math.sin(t * 0.8 + i * 0.5);
       });
       composer.render();
       if (running) rafId = requestAnimationFrame(frame);
@@ -393,7 +405,20 @@ export function HeroScene() {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = 0;
     }
-    const onVisibility = () => (document.hidden ? stop() : start());
+    // Рендерим только когда hero в кадре и вкладка видима — читая секции ниже,
+    // пользователь не жжёт GPU на невидимый bloom-пайплайн.
+    let inView = true;
+    const updateRunState = () => {
+      if (reduced) return;
+      if (inView && !document.hidden) start();
+      else stop();
+    };
+    const io = new IntersectionObserver((entries) => {
+      inView = entries[0]?.isIntersecting ?? true;
+      updateRunState();
+    });
+    io.observe(wrap);
+    const onVisibility = () => updateRunState();
     document.addEventListener('visibilitychange', onVisibility);
 
     if (reduced) {
@@ -413,9 +438,14 @@ export function HeroScene() {
       stop();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pointermove', onPointer);
+      io.disconnect();
       ro.disconnect();
-      renderer.dispose();
+      // composer.dispose() не трогает добавленные пассы — bloom держит
+      // ~11 render target'ов и материалы, освобождаем явно.
+      bloom.dispose();
+      output.dispose();
       composer.dispose();
+      renderer.dispose();
       scene.traverse((obj) => {
         const mesh = obj as THREE.Mesh;
         if (mesh.geometry) mesh.geometry.dispose();
@@ -423,6 +453,7 @@ export function HeroScene() {
         if (Array.isArray(m)) m.forEach((mm) => mm.dispose());
         else if (m) (m as THREE.Material).dispose();
       });
+      textures.forEach((t) => t.dispose());
       if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     };
   }, []);
