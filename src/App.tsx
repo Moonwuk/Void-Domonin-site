@@ -20,7 +20,6 @@ function Nav({ t, locale, onLocale }: { t: SiteContent; locale: Locale; onLocale
       <nav className="nav-links">
         <a href="#features">{t.nav.features}</a>
         <a href="#factions">{t.nav.factions}</a>
-        <a href="#fair">{t.nav.fair}</a>
         <button className="lang-btn" type="button" onClick={onLocale} aria-label="Language">
           {LOCALE_LABEL[locale]}
         </button>
@@ -151,23 +150,6 @@ function Factions({ t }: { t: SiteContent }) {
   );
 }
 
-function FairPlay({ t }: { t: SiteContent }) {
-  return (
-    <section className="section" id="fair">
-      <SectionHeader head={t.fair.head} />
-      <div className="principle-grid">
-        {t.fair.items.map((p, i) => (
-          <Reveal key={p.title} delay={i * 0.08} className="principle">
-            <div className="principle-num">{String(i + 1).padStart(2, '0')}</div>
-            <h3>{p.title}</h3>
-            <p>{p.text}</p>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function CTA({ t }: { t: SiteContent }) {
   return (
     <section className="cta">
@@ -235,7 +217,6 @@ export default function App() {
         <Stats t={t} />
         <Features t={t} />
         <Factions t={t} />
-        <FairPlay t={t} />
         <CTA t={t} />
       </main>
       <Footer t={t} />

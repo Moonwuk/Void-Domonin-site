@@ -320,28 +320,6 @@
 .faction p { font-family: var(--mono); font-size: 13px; margin-top: 4px; }
 @media (max-width: 640px) { .faction-grid { grid-template-columns: 1fr; } }
 
-/* ---------- Principles ---------- */
-.principle-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-}
-.principle {
-  padding: 30px 26px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(9, 27, 34, 0.45), transparent);
-}
-.principle-num {
-  font-family: var(--mono);
-  font-size: 34px;
-  color: var(--cyan-dim);
-  margin-bottom: 16px;
-}
-.principle h3 { font-size: 19px; color: var(--ink-bright); margin-bottom: 10px; }
-.principle p { color: var(--dim); line-height: 1.6; font-size: 15px; }
-@media (max-width: 820px) { .principle-grid { grid-template-columns: 1fr; } }
-
 /* ---------- CTA ---------- */
 .cta {
   max-width: var(--maxw);

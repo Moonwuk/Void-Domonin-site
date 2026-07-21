@@ -18,11 +18,6 @@ export interface Faction {
   passive: string;
 }
 
-export interface Principle {
-  title: string;
-  text: string;
-}
-
 export interface Stat {
   value: string;
   label: string;
@@ -44,7 +39,7 @@ export interface SectionHead {
 
 export interface SiteContent {
   meta: { title: string; description: string };
-  nav: { features: string; factions: string; fair: string; download: string };
+  nav: { features: string; factions: string; download: string };
   hero: {
     eyebrow: string;
     intro: string;
@@ -56,7 +51,6 @@ export interface SiteContent {
   stats: Stat[];
   features: { head: SectionHead; items: Feature[] };
   factions: { head: SectionHead; items: Faction[] };
-  fair: { head: SectionHead; items: Principle[] };
   cta: { h2: string; text: string; download: string };
   upcoming: UpcomingLink[];
   footer: { copyright: string; soon: string };
@@ -69,7 +63,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       description:
         'Void Dominion — космическая стратегия в реальном времени. Мир живёт круглосуточно: строй флоты, развивай экономику, заключай союзы и захватывай миры, даже когда ты офлайн. Играбельная альфа на Android.',
     },
-    nav: { features: 'Возможности', factions: 'Фракции', fair: 'Честная игра', download: 'Скачать' },
+    nav: { features: 'Возможности', factions: 'Фракции', download: 'Скачать' },
     hero: {
       eyebrow: 'Real-time · MMO · Стратегия',
       intro:
@@ -137,23 +131,6 @@ export const CONTENT: Record<Locale, SiteContent> = {
         { name: 'Violet Ascendancy', color: '#b48cff', passive: '+5% экономика и +5% урон' },
       ],
     },
-    fair: {
-      head: { kicker: 'Правила одни для всех', h2: 'Честная игра' },
-      items: [
-        {
-          title: 'Никакого читерства',
-          text: 'Все ходы просчитывает сервер. Противник физически не может подсмотреть, что скрыто туманом войны, или подделать приказ.',
-        },
-        {
-          title: 'Реплеи сражений',
-          text: 'Каждый бой можно пересмотреть и разобрать по ходам — результат всегда честный и всегда сходится.',
-        },
-        {
-          title: 'Прогресс не теряется',
-          text: 'Мир живёт на сервере круглосуточно. Твоя империя на месте, даже если ты не заходил неделю.',
-        },
-      ],
-    },
     cta: {
       h2: 'Мир уже идёт. Займи своё место.',
       text: 'Играбельная альфа доступна на Android: скирмиш против ИИ или онлайн-матч с друзьями. Дальше — больше.',
@@ -176,7 +153,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       description:
         'Void Dominion is a real-time space strategy game. The world runs 24/7: build fleets, grow your economy, forge alliances and conquer worlds — even while you are offline. Playable alpha on Android.',
     },
-    nav: { features: 'Features', factions: 'Factions', fair: 'Fair play', download: 'Download' },
+    nav: { features: 'Features', factions: 'Factions', download: 'Download' },
     hero: {
       eyebrow: 'Real-time · MMO · Strategy',
       intro:
@@ -244,23 +221,6 @@ export const CONTENT: Record<Locale, SiteContent> = {
         { name: 'Violet Ascendancy', color: '#b48cff', passive: '+5% economy and +5% damage' },
       ],
     },
-    fair: {
-      head: { kicker: 'Same rules for everyone', h2: 'Fair play' },
-      items: [
-        {
-          title: 'No cheating',
-          text: "Every move is computed on the server. Your opponent physically can't peek behind the fog of war or forge an order.",
-        },
-        {
-          title: 'Battle replays',
-          text: 'Every battle can be rewatched and analyzed move by move — the result is always fair and always adds up.',
-        },
-        {
-          title: 'Progress never lost',
-          text: 'The world lives on the server around the clock. Your empire is right where you left it, even after a week away.',
-        },
-      ],
-    },
     cta: {
       h2: 'The world is already turning. Claim your place.',
       text: 'The playable alpha is out on Android: skirmish against AI or play online with friends. More to come.',
@@ -283,7 +243,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       description:
         'Void Dominion 是一款实时太空战略游戏。世界全天候运转：建造舰队、发展经济、缔结同盟、征服星球——即使你不在线。Android 试玩版现已推出。',
     },
-    nav: { features: '特色', factions: '阵营', fair: '公平竞技', download: '下载' },
+    nav: { features: '特色', factions: '阵营', download: '下载' },
     hero: {
       eyebrow: '实时 · MMO · 战略',
       intro:
@@ -349,23 +309,6 @@ export const CONTENT: Record<Locale, SiteContent> = {
         { name: 'Crimson Hegemony', color: '#ff5a4d', passive: '+10% 伤害' },
         { name: 'Amber Concord', color: '#ffb43a', passive: '+15% 舰队速度' },
         { name: 'Violet Ascendancy', color: '#b48cff', passive: '+5% 经济与 +5% 伤害' },
-      ],
-    },
-    fair: {
-      head: { kicker: '规则对所有人一致', h2: '公平竞技' },
-      items: [
-        {
-          title: '杜绝作弊',
-          text: '所有行动均由服务器计算。对手不可能窥探战争迷雾，也无法伪造指令。',
-        },
-        {
-          title: '战斗回放',
-          text: '每场战斗都可以回放并逐步复盘——结果始终公正、始终一致。',
-        },
-        {
-          title: '进度永不丢失',
-          text: '世界在服务器上全天候运转。哪怕一周没上线，你的帝国依然原地待命。',
-        },
       ],
     },
     cta: {
