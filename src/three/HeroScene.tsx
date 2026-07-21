@@ -4,6 +4,32 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+
+/**
+ * Финальный дизеринг: ±0.75/255 шума перед квантованием в 8 бит убирает
+ * полосы и «шахматный» узор браузерного дизеринга на плавных градиентах.
+ */
+const DitherShader = {
+  uniforms: { tDiffuse: { value: null as THREE.Texture | null } },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    varying vec2 vUv;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+    void main() {
+      vec4 c = texture2D(tDiffuse, vUv);
+      float n = hash(gl_FragCoord.xy) - 0.5;
+      gl_FragColor = vec4(c.rgb + n * (1.5 / 255.0), c.a);
+    }
+  `,
+};
 
 /**
  * Holographic hero scene: a gently pulsing procedural sphere (GLSL) with
@@ -295,6 +321,8 @@ export function HeroScene() {
     composer.addPass(bloom);
     const output = new OutputPass();
     composer.addPass(output);
+    const dither = new ShaderPass(DitherShader);
+    composer.addPass(dither);
 
     // ===== SIZE =====
     let rafId = 0;
@@ -313,21 +341,11 @@ export function HeroScene() {
     const ro = new ResizeObserver(resize);
     ro.observe(wrap);
 
-    // ===== POINTER PARALLAX =====
-    let mouseX = 0;
-    let mouseY = 0;
-    const onPointer = (e: PointerEvent) => {
-      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-      mouseY = (e.clientY / window.innerHeight) * 2 - 1;
-    };
-    window.addEventListener('pointermove', onPointer, { passive: true });
-
     // ===== LOOP =====
     const clock = new THREE.Clock();
     function frame() {
       const t = clock.getElapsedTime();
-      planetGroup.rotation.y = t * 0.05 + mouseX * 0.12;
-      planetGroup.rotation.x = mouseY * 0.06;
+      planetGroup.rotation.y = t * 0.05;
       planetUniforms.uTime.value = t;
       starMat.uniforms.uTime.value = t;
       stars.rotation.y = t * 0.005;
@@ -377,13 +395,13 @@ export function HeroScene() {
     return () => {
       stop();
       document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('pointermove', onPointer);
       io.disconnect();
       ro.disconnect();
       // composer.dispose() не трогает добавленные пассы — bloom держит
       // ~11 render target'ов и материалы, освобождаем явно.
       bloom.dispose();
       output.dispose();
+      dither.dispose();
       composer.dispose();
       renderer.dispose();
       scene.traverse((obj) => {
