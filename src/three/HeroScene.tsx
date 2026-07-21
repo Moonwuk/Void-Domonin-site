@@ -6,10 +6,10 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 /**
- * Holographic hero scene: procedural planet (GLSL), atmosphere glow, orbital
- * rings with fleets, nebulae, starfield and a distant sun — all lit with bloom.
- * The bright "sun"/planet is pushed to the right so the left-aligned hero copy
- * stays readable. Imperative three.js keeps the postprocessing pipeline simple.
+ * Holographic hero scene: a gently pulsing procedural sphere (GLSL) with
+ * atmosphere glow, nebulae and a starfield — all lit with bloom. The luminous
+ * sphere is pushed to the right so the left-aligned hero copy stays readable.
+ * Imperative three.js keeps the postprocessing pipeline simple.
  */
 export function HeroScene() {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -268,25 +268,6 @@ export function HeroScene() {
     });
     const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(11.4, 64, 64), atmoMat);
     planetGroup.add(atmosphere);
-
-    // ===== DISTANT SUN =====
-    const sun = new THREE.Mesh(
-      new THREE.SphereGeometry(2.0, 24, 24),
-      new THREE.MeshBasicMaterial({ color: 0xeafffb }),
-    );
-    sun.position.set(150, 60, -220);
-    scene.add(sun);
-    const sunHalo = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        map: makeRadialTexture('rgba(180, 245, 250, 0.9)', 'rgba(53, 214, 230, 0.14)'),
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }),
-    );
-    sunHalo.scale.set(26, 26, 1);
-    sunHalo.position.copy(sun.position);
-    scene.add(sunHalo);
 
     // ===== POST PROCESSING =====
     const composer = new EffectComposer(renderer);
