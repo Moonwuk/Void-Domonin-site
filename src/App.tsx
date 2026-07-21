@@ -23,7 +23,7 @@ function Nav({ t, locale, onLocale }: { t: SiteContent; locale: Locale; onLocale
         <button className="lang-btn" type="button" onClick={onLocale} aria-label="Language">
           {LOCALE_LABEL[locale]}
         </button>
-        <a className="nav-cta" href={GAME.apkUrl}>{t.nav.download}</a>
+        <a className="nav-cta" href="#play">{t.nav.play}</a>
       </nav>
     </header>
   );
@@ -152,7 +152,7 @@ function Factions({ t }: { t: SiteContent }) {
 
 function CTA({ t }: { t: SiteContent }) {
   return (
-    <section className="cta">
+    <section className="cta" id="play">
       <Reveal className="cta-inner">
         <h2>{t.cta.h2}</h2>
         <p>{t.cta.text}</p>

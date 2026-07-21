@@ -39,7 +39,7 @@ export interface SectionHead {
 
 export interface SiteContent {
   meta: { title: string; description: string };
-  nav: { features: string; factions: string; download: string };
+  nav: { features: string; factions: string; play: string };
   hero: {
     eyebrow: string;
     intro: string;
@@ -63,7 +63,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       description:
         'Void Dominion — космическая стратегия в реальном времени. Мир живёт круглосуточно: строй флоты, развивай экономику, заключай союзы и захватывай миры, даже когда ты офлайн. Играбельная альфа на Android.',
     },
-    nav: { features: 'Возможности', factions: 'Фракции', download: 'Скачать' },
+    nav: { features: 'Возможности', factions: 'Фракции', play: 'Играть' },
     hero: {
       eyebrow: 'Real-time · MMO · Стратегия',
       intro:
@@ -153,7 +153,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       description:
         'Void Dominion is a real-time space strategy game. The world runs 24/7: build fleets, grow your economy, forge alliances and conquer worlds — even while you are offline. Playable alpha on Android.',
     },
-    nav: { features: 'Features', factions: 'Factions', download: 'Download' },
+    nav: { features: 'Features', factions: 'Factions', play: 'Play' },
     hero: {
       eyebrow: 'Real-time · MMO · Strategy',
       intro:
@@ -243,7 +243,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       description:
         'Void Dominion 是一款实时太空战略游戏。世界全天候运转：建造舰队、发展经济、缔结同盟、征服星球——即使你不在线。Android 试玩版现已推出。',
     },
-    nav: { features: '特色', factions: '阵营', download: '下载' },
+    nav: { features: '特色', factions: '阵营', play: '开始游戏' },
     hero: {
       eyebrow: '实时 · MMO · 战略',
       intro:
