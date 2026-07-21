@@ -2,7 +2,10 @@ import { CONTENT, type Locale } from './data';
 
 const STORAGE_KEY = 'vd-locale';
 export const LOCALES: Locale[] = ['ru', 'en', 'zh'];
+/** Короткая метка на кнопке. */
 export const LOCALE_LABEL: Record<Locale, string> = { ru: 'RU', en: 'EN', zh: '中文' };
+/** Полное название в выпадающем списке — каждое на своём языке. */
+export const LOCALE_NAME: Record<Locale, string> = { ru: 'Русский', en: 'English', zh: '中文' };
 
 function matchLanguage(tag: string): Locale | null {
   const t = tag.toLowerCase();

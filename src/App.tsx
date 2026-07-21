@@ -1,8 +1,15 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Reveal } from './components/Reveal';
 import { GAME, CONTENT, type Locale, type SiteContent } from './data';
-import { LOCALES, LOCALE_LABEL, detectLocale, persistLocale, applyLocaleToDocument } from './i18n';
+import {
+  LOCALES,
+  LOCALE_LABEL,
+  LOCALE_NAME,
+  detectLocale,
+  persistLocale,
+  applyLocaleToDocument,
+} from './i18n';
 
 const HeroScene = lazy(() =>
   import('./three/HeroScene').then((m) => ({ default: m.HeroScene })),
@@ -10,7 +17,63 @@ const HeroScene = lazy(() =>
 
 const asset = (path: string) => import.meta.env.BASE_URL + path;
 
-function Nav({ t, locale, onLocale }: { t: SiteContent; locale: Locale; onLocale: () => void }) {
+function LangMenu({ locale, onSelect }: { locale: Locale; onSelect: (l: Locale) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="lang-menu" ref={ref}>
+      <button
+        className="lang-btn"
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label="Language"
+        onClick={() => setOpen((o) => !o)}
+      >
+        {LOCALE_LABEL[locale]} <span className="lang-caret" aria-hidden>▾</span>
+      </button>
+      {open && (
+        <ul className="lang-list" role="listbox" aria-label="Language">
+          {LOCALES.map((l) => (
+            <li key={l}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={l === locale}
+                className={l === locale ? 'active' : undefined}
+                onClick={() => {
+                  onSelect(l);
+                  setOpen(false);
+                }}
+              >
+                {LOCALE_NAME[l]}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function Nav({ t, locale, onLocale }: { t: SiteContent; locale: Locale; onLocale: (l: Locale) => void }) {
   return (
     <header className="nav">
       <a className="brand" href="#top">
@@ -20,9 +83,7 @@ function Nav({ t, locale, onLocale }: { t: SiteContent; locale: Locale; onLocale
       <nav className="nav-links">
         <a href="#features">{t.nav.features}</a>
         <a href="#factions">{t.nav.factions}</a>
-        <button className="lang-btn" type="button" onClick={onLocale} aria-label="Language">
-          {LOCALE_LABEL[locale]}
-        </button>
+        <LangMenu locale={locale} onSelect={onLocale} />
         <a className="nav-cta" href="#play">{t.nav.play}</a>
       </nav>
     </header>
@@ -203,15 +264,14 @@ export default function App() {
     applyLocaleToDocument(locale);
   }, [locale]);
 
-  const cycleLocale = () => {
-    const next = LOCALES[(LOCALES.indexOf(locale) + 1) % LOCALES.length];
+  const selectLocale = (next: Locale) => {
     persistLocale(next);
     setLocale(next);
   };
 
   return (
     <>
-      <Nav t={t} locale={locale} onLocale={cycleLocale} />
+      <Nav t={t} locale={locale} onLocale={selectLocale} />
       <main>
         <Hero t={t} />
         <Stats t={t} />
