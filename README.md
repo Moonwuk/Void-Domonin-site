@@ -3,7 +3,7 @@
 Лендинг для игры [**Void Dominion**](https://github.com/Moonwuk/MoonGame) — real-time
 космической grand strategy с массовым мультиплеером. Тёмный космический стиль игры,
 интерактивная 3D-сцена в hero-блоке и адаптивная вёрстка.
-
+Лендинг: https://moonwuk.github.io/Void-Domonin-site/
 Сайт: [https://moonwuk.github.io/MoonGame/](https://moonwuk.github.io/MoonGame/)
 
 ## Стек
