@@ -145,6 +145,14 @@ function Hero({ t }: { t: SiteContent }) {
           className="hero-note"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.32 }}
+        >
+          {t.hero.modeNote}
+        </motion.p>
+        <motion.p
+          className="hero-note"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.36 }}
         >
           {t.hero.apkNote}

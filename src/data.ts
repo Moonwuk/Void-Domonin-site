@@ -47,6 +47,7 @@ export interface SiteContent {
     download: string;
     browser: string;
     apkNote: string;
+    modeNote: string;
   };
   soonBadge: string;
   stats: Stat[];
@@ -72,6 +73,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       download: 'Скачать альфу (Android)',
       browser: 'В браузере',
       apkNote: 'Файл .apk — при установке разрешите «неизвестные источники»',
+      modeNote: 'Пока доступен только одиночный тестовый режим с ботами.',
     },
     soonBadge: 'Скоро',
     stats: [
@@ -167,6 +169,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       download: 'Download alpha (Android)',
       browser: 'In browser',
       apkNote: 'APK file — allow “unknown sources” when installing',
+      modeNote: 'Only a single-player test mode with bots is available for now.',
     },
     soonBadge: 'Soon',
     stats: [
@@ -262,6 +265,7 @@ export const CONTENT: Record<Locale, SiteContent> = {
       download: '下载测试版（Android）',
       browser: '网页版',
       apkNote: 'APK 文件——安装时请允许「未知来源」',
+      modeNote: '目前仅开放单人测试模式（对战机器人）。',
     },
     soonBadge: '即将推出',
     stats: [
