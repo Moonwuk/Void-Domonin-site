@@ -232,6 +232,14 @@ function CTA({ t }: { t: SiteContent }) {
         <p>{t.cta.text}</p>
         <div className="hero-actions">
           <a className="btn btn-primary" href={GAME.apkUrl}>{t.cta.download}</a>
+          <a
+            className="btn btn-ghost btn-soon"
+            href={GAME.browserUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t.hero.browser}
+          </a>
         </div>
         <p className="hero-note">{t.hero.apkNote}</p>
         <div className="soon-grid">
