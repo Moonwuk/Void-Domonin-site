@@ -132,9 +132,14 @@ function Hero({ t }: { t: SiteContent }) {
           <a className="btn btn-primary" href={GAME.apkUrl}>
             {t.hero.download}
           </a>
-          <span className="btn btn-ghost btn-soon">
-            {t.hero.browser} <em>{t.soonBadge}</em>
-          </span>
+          <a
+            className="btn btn-ghost btn-soon"
+            href={GAME.browserUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t.hero.browser}
+          </a>
         </motion.div>
         <motion.p
           className="hero-note"

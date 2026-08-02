@@ -4,6 +4,7 @@ export const GAME = {
   name: 'Void Dominion',
   apkUrl:
     'https://github.com/Moonwuk/Nygame/releases/download/alpha/void-dominion-alpha.apk',
+  browserUrl: 'https://moonwuk.github.io/MoonGame/',
 };
 
 export interface Feature {
@@ -137,7 +138,12 @@ export const CONTENT: Record<Locale, SiteContent> = {
       download: 'Скачать APK',
     },
     upcoming: [
-      { icon: '🌐', title: 'Браузерная версия', text: 'Играйте без установки — прямо на этой странице.' },
+      {
+        icon: '🌐',
+        title: 'Браузерная версия',
+        text: 'Играйте без установки — прямо на этой странице.',
+        href: 'https://moonwuk.github.io/MoonGame/',
+      },
       { icon: '💬', title: 'Форум', text: 'Находите союзников, обсуждайте тактики, договаривайтесь о пактах.' },
       { icon: '🛒', title: 'Магазин', text: 'Всё для вашей империи — ближе к релизу.' },
     ],
@@ -227,7 +233,12 @@ export const CONTENT: Record<Locale, SiteContent> = {
       download: 'Download APK',
     },
     upcoming: [
-      { icon: '🌐', title: 'Browser version', text: 'Play without installing — right on this page.' },
+      {
+        icon: '🌐',
+        title: 'Browser version',
+        text: 'Play without installing — right on this page.',
+        href: 'https://moonwuk.github.io/MoonGame/',
+      },
       { icon: '💬', title: 'Forum', text: 'Find allies, discuss tactics, negotiate pacts.' },
       { icon: '🛒', title: 'Shop', text: 'Everything for your empire — closer to release.' },
     ],
@@ -317,7 +328,12 @@ export const CONTENT: Record<Locale, SiteContent> = {
       download: '下载 APK',
     },
     upcoming: [
-      { icon: '🌐', title: '网页版', text: '无需安装，在本页面直接游玩。' },
+      {
+        icon: '🌐',
+        title: '网页版',
+        text: '无需安装，在本页面直接游玩。',
+        href: 'https://moonwuk.github.io/MoonGame/',
+      },
       { icon: '💬', title: '论坛', text: '寻找盟友、探讨战术、商定条约。' },
       { icon: '🛒', title: '商店', text: '帝国所需的一切——临近正式发布时推出。' },
     ],
