@@ -249,7 +249,9 @@
 .btn-ghost:hover { border-color: var(--cyan); color: var(--ink-bright); }
 .btn-soon {
   cursor: pointer;
-  opacity: 0.9;
+  opacity: 0.95;
+  border-color: rgba(53, 214, 230, 0.35);
+  background: rgba(53, 214, 230, 0.08);
 }
 .btn-soon:hover {
   transform: translateY(-2px);
@@ -332,6 +334,17 @@
   max-width: var(--maxw);
   margin: 0 auto;
   padding: clamp(80px, 12vw, 150px) clamp(18px, 5vw, 56px) 0;
+  position: relative;
+  isolation: isolate;
+}
+.section::before {
+  content: '';
+  position: absolute;
+  inset: -1px 0 auto 0;
+  height: 120px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(3, 14, 20, 0.18), rgba(3, 14, 20, 0));
+  z-index: -1;
 }
 .section-head { max-width: 640px; margin-bottom: 46px; }
 .kicker {
@@ -414,6 +427,17 @@
   max-width: var(--maxw);
   margin: clamp(90px, 14vw, 170px) auto 0;
   padding: 0 clamp(18px, 5vw, 56px);
+  position: relative;
+  isolation: isolate;
+}
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: -1px 0 auto 0;
+  height: 110px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(3, 14, 20, 0.14), rgba(3, 14, 20, 0));
+  z-index: -1;
 }
 .cta-inner {
   padding: clamp(44px, 7vw, 84px);

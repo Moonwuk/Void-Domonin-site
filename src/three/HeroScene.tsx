@@ -66,7 +66,7 @@ export function HeroScene() {
       wrap.removeChild(canvas);
       return;
     }
-    const dpr = Math.min(window.devicePixelRatio, 2);
+    const dpr = Math.min(window.devicePixelRatio, 1.5);
     renderer.setPixelRatio(dpr);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
@@ -84,6 +84,9 @@ export function HeroScene() {
     scene.add(world);
 
     const isMobile = wrap.clientWidth < 760;
+    const deviceMemory = (window as Window & { deviceMemory?: number }).deviceMemory;
+    const isLowPower = isMobile || window.navigator.hardwareConcurrency <= 4 || (deviceMemory ? deviceMemory <= 4 : false);
+    const useHeavyEffects = !isLowPower;
 
     // ===== STARFIELD =====
     const starColors = ['#ffffff', '#bfeee6', '#35d6e6', '#8ff4fa', '#b48cff', '#ffe5c2'];
@@ -112,7 +115,7 @@ export function HeroScene() {
       geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
       return geo;
     }
-    const starGeo = makeStarfield(isMobile ? 2600 : 6500, 800, [0.5, 2.0]);
+    const starGeo = makeStarfield(isLowPower ? 1200 : isMobile ? 1800 : 4200, 800, [0.5, 1.4]);
     const starMat = new THREE.ShaderMaterial({
       uniforms: { uTime: { value: 0 } },
       vertexShader: `
@@ -378,12 +381,20 @@ export function HeroScene() {
     const composer = new EffectComposer(renderer);
     composer.setPixelRatio(dpr);
     composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), isMobile ? 0.5 : 0.62, 0.5, 0.32);
-    composer.addPass(bloom);
-    const output = new OutputPass();
-    composer.addPass(output);
-    const dither = new ShaderPass(DitherShader);
-    composer.addPass(dither);
+    let bloom: UnrealBloomPass | null = null;
+    let output: OutputPass | null = null;
+    let dither: ShaderPass | null = null;
+    if (useHeavyEffects) {
+      bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), isMobile ? 0.35 : 0.45, 0.45, 0.32);
+      composer.addPass(bloom);
+      output = new OutputPass();
+      composer.addPass(output);
+      dither = new ShaderPass(DitherShader);
+      composer.addPass(dither);
+    } else {
+      const outputPass = new OutputPass();
+      composer.addPass(outputPass);
+    }
 
     // ===== SIZE =====
     let rafId = 0;
@@ -413,7 +424,7 @@ export function HeroScene() {
       nebulaGroup.rotation.y = t * 0.008;
       // Нежное «дыхание» светила: ободок и атмосфера медленно разгораются
       // и гаснут, сам шар едва заметно расширяется.
-      const breath = 0.5 + 0.5 * Math.sin(t * 0.6);
+      const breath = 0.5 + 0.22 * Math.sin(t * 0.32);
       planetUniforms.uPulse.value = breath;
       atmoUniforms.uPulse.value = breath;
       atmoUniforms.uTime.value = t;
@@ -462,9 +473,9 @@ export function HeroScene() {
       ro.disconnect();
       // composer.dispose() не трогает добавленные пассы — bloom держит
       // ~11 render target'ов и материалы, освобождаем явно.
-      bloom.dispose();
-      output.dispose();
-      dither.dispose();
+      bloom?.dispose();
+      output?.dispose();
+      dither?.dispose();
       composer.dispose();
       renderer.dispose();
       scene.traverse((obj) => {
