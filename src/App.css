@@ -248,10 +248,16 @@
 }
 .btn-ghost:hover { border-color: var(--cyan); color: var(--ink-bright); }
 .btn-soon {
-  cursor: default;
-  opacity: 0.75;
+  cursor: pointer;
+  opacity: 0.9;
 }
-.btn-soon:hover { transform: none; border-color: var(--line-hi); color: var(--ink); }
+.btn-soon:hover {
+  transform: translateY(-2px);
+  border-color: var(--cyan);
+  color: var(--ink-bright);
+  box-shadow: 0 10px 24px rgba(53, 214, 230, 0.16);
+  background: rgba(53, 214, 230, 0.09);
+}
 .btn-soon em {
   font-style: normal;
   font-family: var(--mono);
